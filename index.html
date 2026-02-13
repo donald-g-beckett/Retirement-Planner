@@ -16,14 +16,14 @@
 <body>
   <div id="root"></div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.12.7/Recharts.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/recharts@2.12.7/dist/Recharts.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <script type="text/babel">
     const { useState, useMemo } = React;
-    const { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, Area, ComposedChart } = Recharts;
+    const { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, Area, ComposedChart } = window.Recharts;
 
     const formatCurrency = (value) => {
       if (value >= 1000000) return "$" + (value / 1000000).toFixed(2) + "M";
@@ -62,6 +62,22 @@
         {sublabel && <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '4px', fontFamily: "'DM Sans', sans-serif" }}>{sublabel}</div>}
       </div>
     );
+
+    const CustomTooltip = ({ active, payload }) => {
+      if (active && payload && payload.length) {
+        return (
+          <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: '6px', padding: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
+            <div style={{ fontSize: '12px', color: '#1a1a1a', marginBottom: '6px', fontWeight: 600 }}>Age {payload[0].payload.age}</div>
+            {payload.map((item, i) => (
+              <div key={i} style={{ fontSize: '11px', color: item.color, marginBottom: '4px' }}>
+                {item.name}: {formatCurrency(item.value)}
+              </div>
+            ))}
+          </div>
+        );
+      }
+      return null;
+    };
 
     function RetirementPlanner() {
       const [currentAge, setCurrentAge] = useState(55);
@@ -105,64 +121,20 @@
 
       const peakPortfolio = useMemo(() => Math.max(...data.map(d => d.portfolioValue)), [data]);
       const portfolioAtRetirement = useMemo(() => { const ret = data.find(d => d.age === retirementAge); return ret ? ret.portfolioValue : 0; }, [data, retirementAge]);
-      const portfolioAtEnd = useMemo(() => { const end = data[data.length - 1]; return end ? end.portfolioValue : 0; }, [data]);
-      const totalWithdrawnAtEnd = useMemo(() => { const end = data[data.length - 1]; return end ? end.cumulativeWithdrawals : 0; }, [data]);
+      const portfolioAtEnd = useMemo(() => { const end = data.find(d => d.age === endAge); return end ? end.portfolioValue : 0; }, [data, endAge]);
+      const totalWithdrawnAtEnd = useMemo(() => { const end = data.find(d => d.age === endAge); return end ? end.cumulativeWithdrawals : 0; }, [data, endAge]);
 
-      const isDanger = !!depletionAge;
-      const isWarning = crossoverAge && !depletionAge;
-      const statusColor = isDanger ? '#dc2626' : isWarning ? '#d97706' : '#0a7e3e';
-      const statusText = isDanger
-        ? "\u26A0\uFE0F Portfolio depleted at age " + depletionAge
-        : isWarning
-        ? "\u26A1 Withdrawals exceed portfolio at age " + crossoverAge
-        : "\u2705 Portfolio sustainable through age " + endAge;
-
-      const CustomTooltip = ({ active, payload, label }) => {
-        if (!active || !payload || !payload.length) return null;
-        const d = payload[0]?.payload;
-        return (
-          <div style={{ background: 'rgba(255,255,255,0.98)', backdropFilter: 'blur(8px)', border: '2px solid #0a2463', borderRadius: '8px', padding: '14px 18px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', fontFamily: "'DM Sans', sans-serif" }}>
-            <div style={{ fontSize: '13px', fontWeight: '700', color: '#0a2463', marginBottom: '8px' }}>
-              Age {label} {d?.phase === 'accumulation' ? '(Saving)' : d?.phase === 'phase2' ? '(Phase 2 Withdrawal)' : '(Phase 1 Withdrawal)'}
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '20px' }}>
-                <span style={{ fontSize: '12px', color: '#0a2463' }}>● Portfolio Value</span>
-                <span style={{ fontSize: '12px', color: '#0a2463', fontWeight: '600' }}>{formatFullCurrency(d?.portfolioValue || 0)}</span>
-              </div>
-              {d?.cumulativeWithdrawals > 0 && (
-                <>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '20px' }}>
-                    <span style={{ fontSize: '12px', color: '#dc2626' }}>● Cumulative Withdrawn</span>
-                    <span style={{ fontSize: '12px', color: '#dc2626', fontWeight: '600' }}>{formatFullCurrency(d.cumulativeWithdrawals)}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '20px', borderTop: '1px solid #e5e7eb', paddingTop: '5px', marginTop: '3px' }}>
-                    <span style={{ fontSize: '11px', color: '#6b7280' }}>Annual Withdrawal</span>
-                    <span style={{ fontSize: '11px', color: '#374151', fontWeight: '600' }}>{formatFullCurrency(d.annualWithdrawal || 0)}/yr</span>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        );
-      };
+      const isDanger = useMemo(() => {
+        return depletionAge !== null || (crossoverAge && crossoverAge <= endAge);
+      }, [depletionAge, crossoverAge, endAge]);
 
       return (
-        <div style={{ minHeight: '100vh', background: '#f8f9fa', fontFamily: "'DM Sans', sans-serif", color: '#1a1a1a', padding: '0' }}>
-          {/* Header */}
-          <div style={{ background: 'linear-gradient(135deg, #0a2463 0%, #1e3a8a 100%)', borderBottom: '3px solid #d4af37', padding: '28px 32px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-            <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-              <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: '32px', fontWeight: '700', margin: '0', color: '#ffffff', letterSpacing: '-0.02em' }}>
-                Wealth & Estate Financial Canada Retirement Planner
-              </h1>
-            </div>
-          </div>
-
-          <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px 32px', background: '#ffffff', minHeight: 'calc(100vh - 120px)' }}>
-            {/* Status Banner */}
-            <div style={{ background: '#ffffff', border: "3px solid " + statusColor, borderRadius: '8px', padding: '16px 24px', marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', boxShadow: '0 2px 4px rgba(0,0,0,0.08)' }}>
-              <span style={{ fontSize: '15px', fontWeight: '700', color: statusColor }}>{statusText}</span>
-              <span style={{ fontSize: '12px', color: '#6b7280' }}>Adjust withdrawal amounts to find your sustainable income level</span>
+        <div style={{ minHeight: '100vh', background: '#f8f9fa', padding: '32px 20px' }}>
+          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+            {/* Header */}
+            <div style={{ marginBottom: '32px' }}>
+              <h1 style={{ fontSize: '32px', fontWeight: '700', color: '#0a2463', marginBottom: '8px', fontFamily: "'Playfair Display', serif" }}>Retirement Planner</h1>
+              <p style={{ fontSize: '14px', color: '#6b7280' }}>Wealth & Estate Financial Canada</p>
             </div>
 
             {/* Stats Row */}
@@ -267,7 +239,8 @@
       );
     }
 
-    ReactDOM.render(<RetirementPlanner />, document.getElementById('root'));
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<RetirementPlanner />);
   </script>
 </body>
 </html>

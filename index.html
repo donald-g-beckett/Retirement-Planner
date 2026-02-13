@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wealth & Estate Financial Canada — Retirement Planner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', sans-serif; background: #f8f9fa; color: #1a1a1a; }
+    input:focus { outline: none; }
+    input[type="text"] { font-family: 'DM Sans', sans-serif; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.12.7/Recharts.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+
+  <script type="text/babel">
+    const { useState, useMemo } = React;
+    const { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, Area, ComposedChart } = Recharts;
+
+    const formatCurrency = (value) => {
+      if (value >= 1000000) return "$" + (value / 1000000).toFixed(2) + "M";
+      if (value >= 1000) return "$" + (value / 1000).toFixed(0) + "K";
+      return "$" + value.toFixed(0);
+    };
+
+    const formatFullCurrency = (value) => {
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value);
+    };
+
+    const InputField = ({ label, value, onChange, prefix, suffix, min, max, step = 1, helpText }) => {
+      const formatWithCommas = (num) => num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      const handleChange = (e) => {
+        const rawValue = e.target.value.replace(/,/g, '');
+        const numValue = Number(rawValue);
+        if (!isNaN(numValue)) onChange(numValue);
+      };
+      return (
+        <div style={{ marginBottom: '16px' }}>
+          <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#0a2463', marginBottom: '6px', fontFamily: "'DM Sans', sans-serif" }}>{label}</label>
+          <div style={{ display: 'flex', alignItems: 'center', background: '#ffffff', border: '2px solid #e5e7eb', borderRadius: '6px', padding: '0 12px', transition: 'border-color 0.2s' }}>
+            {prefix && <span style={{ color: '#6b7280', fontSize: '14px', marginRight: '4px', fontFamily: "'DM Sans', sans-serif" }}>{prefix}</span>}
+            <input type="text" value={formatWithCommas(value)} onChange={handleChange} style={{ width: '100%', padding: '10px 4px', border: 'none', background: 'transparent', fontSize: '15px', fontWeight: '500', color: '#1a1a1a', outline: 'none', fontFamily: "'DM Sans', sans-serif" }} />
+            {suffix && <span style={{ color: '#6b7280', fontSize: '13px', marginLeft: '4px', fontFamily: "'DM Sans', sans-serif" }}>{suffix}</span>}
+          </div>
+          {helpText && <span style={{ fontSize: '11px', color: '#6b7280', marginTop: '3px', display: 'block', fontFamily: "'DM Sans', sans-serif" }}>{helpText}</span>}
+        </div>
+      );
+    };
+
+    const StatCard = ({ label, value, color, sublabel }) => (
+      <div style={{ background: '#ffffff', border: "2px solid " + color, borderRadius: '8px', padding: '16px 18px', flex: 1, minWidth: '140px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+        <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6b7280', marginBottom: '6px', fontFamily: "'DM Sans', sans-serif", fontWeight: 600 }}>{label}</div>
+        <div style={{ fontSize: '22px', fontWeight: '700', color: color, fontFamily: "'DM Sans', sans-serif" }}>{value}</div>
+        {sublabel && <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '4px', fontFamily: "'DM Sans', sans-serif" }}>{sublabel}</div>}
+      </div>
+    );
+
+    function RetirementPlanner() {
+      const [currentAge, setCurrentAge] = useState(55);
+      const [retirementAge, setRetirementAge] = useState(65);
+      const [startingPortfolio, setStartingPortfolio] = useState(500000);
+      const [annualContribution, setAnnualContribution] = useState(25000);
+      const [growthRate, setGrowthRate] = useState(7.0);
+      const [phase1Withdrawal, setPhase1Withdrawal] = useState(50000);
+      const [phase2Age, setPhase2Age] = useState(75);
+      const [phase2Withdrawal, setPhase2Withdrawal] = useState(70000);
+      const [endAge, setEndAge] = useState(95);
+
+      const data = useMemo(() => {
+        const points = [];
+        let portfolio = startingPortfolio;
+        let totalWithdrawn = 0;
+        const rate = growthRate / 100;
+        for (let age = currentAge; age <= endAge; age++) {
+          if (age < retirementAge) {
+            portfolio = portfolio * (1 + rate) + annualContribution;
+            points.push({ age, portfolioValue: Math.round(portfolio), cumulativeWithdrawals: 0, phase: 'accumulation' });
+          } else {
+            const withdrawal = age >= phase2Age ? phase2Withdrawal : phase1Withdrawal;
+            portfolio = portfolio * (1 + rate) - withdrawal;
+            totalWithdrawn += withdrawal;
+            points.push({ age, portfolioValue: Math.max(0, Math.round(portfolio)), cumulativeWithdrawals: Math.round(totalWithdrawn), annualWithdrawal: withdrawal, phase: age >= phase2Age ? 'phase2' : 'phase1' });
+          }
+        }
+        return points;
+      }, [currentAge, retirementAge, startingPortfolio, annualContribution, growthRate, phase1Withdrawal, phase2Age, phase2Withdrawal, endAge]);
+
+      const crossoverAge = useMemo(() => {
+        const cross = data.find(d => d.cumulativeWithdrawals > 0 && d.cumulativeWithdrawals >= d.portfolioValue);
+        return cross ? cross.age : null;
+      }, [data]);
+
+      const depletionAge = useMemo(() => {
+        const dep = data.find(d => d.portfolioValue <= 0 && d.age >= retirementAge);
+        return dep ? dep.age : null;
+      }, [data, retirementAge]);
+
+      const peakPortfolio = useMemo(() => Math.max(...data.map(d => d.portfolioValue)), [data]);
+      const portfolioAtRetirement = useMemo(() => { const ret = data.find(d => d.age === retirementAge); return ret ? ret.portfolioValue : 0; }, [data, retirementAge]);
+      const portfolioAtEnd = useMemo(() => { const end = data[data.length - 1]; return end ? end.portfolioValue : 0; }, [data]);
+      const totalWithdrawnAtEnd = useMemo(() => { const end = data[data.length - 1]; return end ? end.cumulativeWithdrawals : 0; }, [data]);
+
+      const isDanger = !!depletionAge;
+      const isWarning = crossoverAge && !depletionAge;
+      const statusColor = isDanger ? '#dc2626' : isWarning ? '#d97706' : '#0a7e3e';
+      const statusText = isDanger
+        ? "\u26A0\uFE0F Portfolio depleted at age " + depletionAge
+        : isWarning
+        ? "\u26A1 Withdrawals exceed portfolio at age " + crossoverAge
+        : "\u2705 Portfolio sustainable through age " + endAge;
+
+      const CustomTooltip = ({ active, payload, label }) => {
+        if (!active || !payload || !payload.length) return null;
+        const d = payload[0]?.payload;
+        return (
+          <div style={{ background: 'rgba(255,255,255,0.98)', backdropFilter: 'blur(8px)', border: '2px solid #0a2463', borderRadius: '8px', padding: '14px 18px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', fontFamily: "'DM Sans', sans-serif" }}>
+            <div style={{ fontSize: '13px', fontWeight: '700', color: '#0a2463', marginBottom: '8px' }}>
+              Age {label} {d?.phase === 'accumulation' ? '(Saving)' : d?.phase === 'phase2' ? '(Phase 2 Withdrawal)' : '(Phase 1 Withdrawal)'}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '20px' }}>
+                <span style={{ fontSize: '12px', color: '#0a2463' }}>● Portfolio Value</span>
+                <span style={{ fontSize: '12px', color: '#0a2463', fontWeight: '600' }}>{formatFullCurrency(d?.portfolioValue || 0)}</span>
+              </div>
+              {d?.cumulativeWithdrawals > 0 && (
+                <>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '20px' }}>
+                    <span style={{ fontSize: '12px', color: '#dc2626' }}>● Cumulative Withdrawn</span>
+                    <span style={{ fontSize: '12px', color: '#dc2626', fontWeight: '600' }}>{formatFullCurrency(d.cumulativeWithdrawals)}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '20px', borderTop: '1px solid #e5e7eb', paddingTop: '5px', marginTop: '3px' }}>
+                    <span style={{ fontSize: '11px', color: '#6b7280' }}>Annual Withdrawal</span>
+                    <span style={{ fontSize: '11px', color: '#374151', fontWeight: '600' }}>{formatFullCurrency(d.annualWithdrawal || 0)}/yr</span>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        );
+      };
+
+      return (
+        <div style={{ minHeight: '100vh', background: '#f8f9fa', fontFamily: "'DM Sans', sans-serif", color: '#1a1a1a', padding: '0' }}>
+          {/* Header */}
+          <div style={{ background: 'linear-gradient(135deg, #0a2463 0%, #1e3a8a 100%)', borderBottom: '3px solid #d4af37', padding: '28px 32px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+            <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+              <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: '32px', fontWeight: '700', margin: '0', color: '#ffffff', letterSpacing: '-0.02em' }}>
+                Wealth & Estate Financial Canada Retirement Planner
+              </h1>
+            </div>
+          </div>
+
+          <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px 32px', background: '#ffffff', minHeight: 'calc(100vh - 120px)' }}>
+            {/* Status Banner */}
+            <div style={{ background: '#ffffff', border: "3px solid " + statusColor, borderRadius: '8px', padding: '16px 24px', marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', boxShadow: '0 2px 4px rgba(0,0,0,0.08)' }}>
+              <span style={{ fontSize: '15px', fontWeight: '700', color: statusColor }}>{statusText}</span>
+              <span style={{ fontSize: '12px', color: '#6b7280' }}>Adjust withdrawal amounts to find your sustainable income level</span>
+            </div>
+
+            {/* Stats Row */}
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap' }}>
+              <StatCard label="At Retirement" value={formatCurrency(portfolioAtRetirement)} color="#0a2463" sublabel={"Age " + retirementAge} />
+              <StatCard label="Peak Value" value={formatCurrency(peakPortfolio)} color="#d4af37" />
+              <StatCard label="Total Withdrawn" value={formatCurrency(totalWithdrawnAtEnd)} color="#dc2626" sublabel={"By age " + endAge} />
+              <StatCard label={"At Age " + endAge} value={formatCurrency(portfolioAtEnd)} color={portfolioAtEnd > 0 ? '#0a7e3e' : '#dc2626'} sublabel={portfolioAtEnd > 0 ? 'Remaining' : 'Depleted'} />
+            </div>
+
+            {/* Main Layout */}
+            <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
+              {/* Inputs Panel */}
+              <div style={{ width: '280px', flexShrink: 0, background: '#ffffff', border: '2px solid #e5e7eb', borderRadius: '8px', padding: '24px', boxShadow: '0 2px 4px rgba(0,0,0,0.08)' }}>
+                <h3 style={{ fontSize: '13px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#0a2463', marginTop: 0, marginBottom: '20px' }}>
+                  📊 Your Inputs
+                </h3>
+                <div style={{ borderBottom: '2px solid #f3f4f6', paddingBottom: '18px', marginBottom: '18px' }}>
+                  <div style={{ fontSize: '11px', fontWeight: '700', color: '#0a2463', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Ages</div>
+                  <InputField label="Current Age" value={currentAge} onChange={setCurrentAge} suffix="yrs" />
+                  <InputField label="Retirement Age" value={retirementAge} onChange={setRetirementAge} suffix="yrs" />
+                  <InputField label="Plan Through Age" value={endAge} onChange={setEndAge} suffix="yrs" />
+                </div>
+                <div style={{ borderBottom: '2px solid #f3f4f6', paddingBottom: '18px', marginBottom: '18px' }}>
+                  <div style={{ fontSize: '11px', fontWeight: '700', color: '#d4af37', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Accumulation</div>
+                  <InputField label="Current Portfolio" value={startingPortfolio} onChange={setStartingPortfolio} prefix="$" />
+                  <InputField label="Annual Contribution" value={annualContribution} onChange={setAnnualContribution} prefix="$" helpText="Until retirement" />
+                  <InputField label="Avg Growth Rate" value={growthRate} onChange={setGrowthRate} suffix="%" />
+                </div>
+                <div>
+                  <div style={{ fontSize: '11px', fontWeight: '700', color: '#dc2626', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Withdrawals</div>
+                  <InputField label="Phase 1 Annual Withdrawal" value={phase1Withdrawal} onChange={setPhase1Withdrawal} prefix="$" helpText={"Age " + retirementAge + " to " + (phase2Age - 1)} />
+                  <InputField label="Phase 2 Starts At Age" value={phase2Age} onChange={setPhase2Age} suffix="yrs" />
+                  <InputField label="Phase 2 Annual Withdrawal" value={phase2Withdrawal} onChange={setPhase2Withdrawal} prefix="$" helpText={"Age " + phase2Age + " to " + endAge} />
+                </div>
+              </div>
+
+              {/* Chart Panel */}
+              <div style={{ flex: 1, minWidth: '400px', background: '#ffffff', border: '2px solid #e5e7eb', borderRadius: '8px', padding: '28px', boxShadow: '0 2px 4px rgba(0,0,0,0.08)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                  <h3 style={{ fontSize: '15px', fontWeight: '700', color: '#0a2463', margin: 0 }}>Portfolio Value vs. Cumulative Withdrawals</h3>
+                  <div style={{ display: 'flex', gap: '16px', fontSize: '11px' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <span style={{ width: '12px', height: '3px', background: '#0a2463', borderRadius: '2px', display: 'inline-block' }} />
+                      <span style={{ color: '#6b7280' }}>Portfolio</span>
+                    </span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <span style={{ width: '12px', height: '3px', background: '#dc2626', borderRadius: '2px', display: 'inline-block' }} />
+                      <span style={{ color: '#6b7280' }}>Cumulative Withdrawals</span>
+                    </span>
+                  </div>
+                </div>
+
+                <ResponsiveContainer width="100%" height={420}>
+                  <ComposedChart data={data} margin={{ top: 30, right: 20, left: 10, bottom: 10 }}>
+                    <defs>
+                      <linearGradient id="portfolioGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#0a2463" stopOpacity={0.15} />
+                        <stop offset="100%" stopColor="#0a2463" stopOpacity={0.02} />
+                      </linearGradient>
+                      <linearGradient id="withdrawGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#dc2626" stopOpacity={0.15} />
+                        <stop offset="100%" stopColor="#dc2626" stopOpacity={0.02} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis dataKey="age" stroke="#9ca3af" tick={{ fill: '#6b7280', fontSize: 11 }} label={{ value: 'Age', position: 'insideBottom', offset: -5, fill: '#6b7280', fontSize: 11 }} />
+                    <YAxis stroke="#9ca3af" tick={{ fill: '#6b7280', fontSize: 11 }} tickFormatter={formatCurrency} width={70} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <ReferenceLine x={retirementAge} stroke="#d4af37" strokeDasharray="6 4" strokeOpacity={0.8} label={{ value: "Retire " + retirementAge, position: 'top', fill: '#d4af37', fontSize: 10, fontWeight: 600 }} />
+                    <ReferenceLine x={phase2Age} stroke="#d97706" strokeDasharray="6 4" strokeOpacity={0.6} label={{ value: "Phase 2: " + phase2Age, position: 'top', fill: '#d97706', fontSize: 10 }} />
+                    {crossoverAge && (
+                      <ReferenceLine x={crossoverAge} stroke="#dc2626" strokeDasharray="4 3" strokeOpacity={0.7} label={{ value: "Cross " + crossoverAge, position: 'insideTopRight', fill: '#dc2626', fontSize: 10 }} />
+                    )}
+                    <Area type="monotone" dataKey="portfolioValue" fill="url(#portfolioGrad)" stroke="none" />
+                    <Line type="monotone" dataKey="portfolioValue" stroke="#0a2463" strokeWidth={3} dot={false} name="Portfolio Value" activeDot={{ r: 5, fill: '#0a2463', stroke: '#fff', strokeWidth: 2 }} />
+                    <Area type="monotone" dataKey="cumulativeWithdrawals" fill="url(#withdrawGrad)" stroke="none" />
+                    <Line type="monotone" dataKey="cumulativeWithdrawals" stroke="#dc2626" strokeWidth={3} dot={false} name="Cumulative Withdrawals" activeDot={{ r: 5, fill: '#dc2626', stroke: '#fff', strokeWidth: 2 }} />
+                  </ComposedChart>
+                </ResponsiveContainer>
+
+                <div style={{ marginTop: '18px', padding: '16px 20px', background: '#f9fafb', borderRadius: '6px', border: '1px solid #e5e7eb', fontSize: '12px', color: '#4b5563', lineHeight: '1.7' }}>
+                  <strong style={{ color: '#1f2937' }}>How to read this chart:</strong> The navy line (portfolio value) should always stay <em>above</em> the red line (cumulative withdrawals).
+                  When the red line crosses above the navy line, you're withdrawing faster than the portfolio grows — <span style={{ color: '#dc2626', fontWeight: '600' }}>eventual depletion is likely</span>.
+                  Adjust withdrawal amounts until the portfolio remains sustainable through age {endAge}.
+                  {isDanger && (
+                    <div style={{ marginTop: '10px', color: '#dc2626', fontWeight: '600' }}>
+                      💡 Try reducing Phase {phase2Withdrawal > phase1Withdrawal ? '2' : '1'} withdrawals by {formatCurrency(Math.round((phase2Withdrawal > phase1Withdrawal ? phase2Withdrawal : phase1Withdrawal) * 0.15))} to see if sustainability improves.
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div style={{ marginTop: '24px', padding: '16px 24px', borderTop: '2px solid #e5e7eb', fontSize: '11px', color: '#6b7280', textAlign: 'center', background: '#ffffff', borderRadius: '6px' }}>
+              This model assumes a constant average annual growth rate and does not account for inflation, taxes, market volatility, or sequence-of-returns risk.
+              For illustration purposes only — not financial advice. Consult your advisor for personalized planning.
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.render(<RetirementPlanner />, document.getElementById('root'));
+  </script>
+</body>
+</html>

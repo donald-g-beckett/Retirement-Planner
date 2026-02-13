@@ -11,236 +11,430 @@
     body { font-family: 'DM Sans', sans-serif; background: #f8f9fa; color: #1a1a1a; }
     input:focus { outline: none; }
     input[type="text"] { font-family: 'DM Sans', sans-serif; }
+
+    .planner-wrap { min-height: 100vh; padding: 32px 20px; }
+    .planner-inner { max-width: 1200px; margin: 0 auto; }
+
+    .planner-title { font-size: 32px; font-weight: 700; color: #0a2463; margin-bottom: 8px; font-family: 'Playfair Display', serif; }
+    .planner-subtitle { font-size: 14px; color: #6b7280; margin-bottom: 32px; }
+
+    /* Stats Row */
+    .stats-row { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+    .stat-card { background: #fff; border-radius: 8px; padding: 16px 18px; flex: 1; min-width: 140px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 2px solid #e5e7eb; }
+    .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: #6b7280; margin-bottom: 6px; font-weight: 600; }
+    .stat-value { font-size: 22px; font-weight: 700; }
+    .stat-sub { font-size: 11px; color: #6b7280; margin-top: 4px; }
+
+    /* Layout */
+    .main-layout { display: flex; gap: 24px; flex-wrap: wrap; }
+
+    /* Inputs Panel */
+    .inputs-panel { width: 280px; flex-shrink: 0; background: #fff; border: 2px solid #e5e7eb; border-radius: 8px; padding: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
+    .inputs-panel h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #0a2463; margin-bottom: 20px; }
+    .input-section { border-bottom: 2px solid #f3f4f6; padding-bottom: 18px; margin-bottom: 18px; }
+    .input-section:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
+    .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; }
+
+    .field { margin-bottom: 16px; }
+    .field-label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #0a2463; margin-bottom: 6px; }
+    .field-wrap { display: flex; align-items: center; background: #fff; border: 2px solid #e5e7eb; border-radius: 6px; padding: 0 12px; transition: border-color 0.2s; }
+    .field-wrap:focus-within { border-color: #0a2463; }
+    .field-prefix, .field-suffix { color: #6b7280; font-size: 14px; }
+    .field-prefix { margin-right: 4px; }
+    .field-suffix { margin-left: 4px; font-size: 13px; }
+    .field input { width: 100%; padding: 10px 4px; border: none; background: transparent; font-size: 15px; font-weight: 500; color: #1a1a1a; font-family: 'DM Sans', sans-serif; }
+    .field-help { font-size: 11px; color: #6b7280; margin-top: 3px; display: block; }
+
+    /* Chart Panel */
+    .chart-panel { flex: 1; min-width: 400px; background: #fff; border: 2px solid #e5e7eb; border-radius: 8px; padding: 28px; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
+    .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+    .chart-title { font-size: 15px; font-weight: 700; color: #0a2463; }
+    .chart-legend { display: flex; gap: 16px; font-size: 11px; }
+    .legend-item { display: flex; align-items: center; gap: 5px; }
+    .legend-swatch { width: 12px; height: 3px; border-radius: 2px; display: inline-block; }
+    .legend-text { color: #6b7280; }
+
+    .chart-container { position: relative; width: 100%; }
+    canvas { width: 100% !important; display: block; }
+
+    .chart-tooltip { position: absolute; pointer-events: none; background: #fff; border: 1px solid #e5e7eb; border-radius: 6px; padding: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); font-size: 12px; z-index: 10; display: none; }
+    .chart-tooltip.visible { display: block; }
+    .tooltip-age { font-weight: 600; color: #1a1a1a; margin-bottom: 6px; }
+    .tooltip-row { font-size: 11px; margin-bottom: 3px; }
+
+    .chart-note { margin-top: 18px; padding: 16px 20px; background: #f9fafb; border-radius: 6px; border: 1px solid #e5e7eb; font-size: 12px; color: #4b5563; line-height: 1.7; }
+    .chart-note strong { color: #1f2937; }
+    .danger-tip { margin-top: 10px; color: #dc2626; font-weight: 600; }
+
+    /* Footer */
+    .planner-footer { margin-top: 24px; padding: 16px 24px; border-top: 2px solid #e5e7eb; font-size: 11px; color: #6b7280; text-align: center; background: #fff; border-radius: 6px; }
+
+    @media (max-width: 780px) {
+      .main-layout { flex-direction: column; }
+      .inputs-panel { width: 100%; }
+      .chart-panel { min-width: unset; }
+      .stats-row { flex-direction: column; }
+    }
   </style>
 </head>
 <body>
-  <div id="root"></div>
+  <div class="planner-wrap">
+    <div class="planner-inner">
+      <h1 class="planner-title">Retirement Planner</h1>
+      <p class="planner-subtitle">Wealth & Estate Financial Canada</p>
 
-  <script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/recharts@2.12.7/dist/Recharts.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+      <!-- Stats Row -->
+      <div class="stats-row" id="statsRow"></div>
 
-  <script type="text/babel">
-    const { useState, useMemo } = React;
-    const { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, Area, ComposedChart } = window.Recharts;
+      <div class="main-layout">
+        <!-- Inputs Panel -->
+        <div class="inputs-panel">
+          <h3>📊 Your Inputs</h3>
 
-    const formatCurrency = (value) => {
-      if (value >= 1000000) return "$" + (value / 1000000).toFixed(2) + "M";
-      if (value >= 1000) return "$" + (value / 1000).toFixed(0) + "K";
-      return "$" + value.toFixed(0);
-    };
-
-    const formatFullCurrency = (value) => {
-      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value);
-    };
-
-    const InputField = ({ label, value, onChange, prefix, suffix, min, max, step = 1, helpText }) => {
-      const formatWithCommas = (num) => num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-      const handleChange = (e) => {
-        const rawValue = e.target.value.replace(/,/g, '');
-        const numValue = Number(rawValue);
-        if (!isNaN(numValue)) onChange(numValue);
-      };
-      return (
-        <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#0a2463', marginBottom: '6px', fontFamily: "'DM Sans', sans-serif" }}>{label}</label>
-          <div style={{ display: 'flex', alignItems: 'center', background: '#ffffff', border: '2px solid #e5e7eb', borderRadius: '6px', padding: '0 12px', transition: 'border-color 0.2s' }}>
-            {prefix && <span style={{ color: '#6b7280', fontSize: '14px', marginRight: '4px', fontFamily: "'DM Sans', sans-serif" }}>{prefix}</span>}
-            <input type="text" value={formatWithCommas(value)} onChange={handleChange} style={{ width: '100%', padding: '10px 4px', border: 'none', background: 'transparent', fontSize: '15px', fontWeight: '500', color: '#1a1a1a', outline: 'none', fontFamily: "'DM Sans', sans-serif" }} />
-            {suffix && <span style={{ color: '#6b7280', fontSize: '13px', marginLeft: '4px', fontFamily: "'DM Sans', sans-serif" }}>{suffix}</span>}
+          <div class="input-section">
+            <div class="section-label" style="color:#0a2463;">Ages</div>
+            <div class="field">
+              <label class="field-label">Current Age</label>
+              <div class="field-wrap"><input type="text" data-key="currentAge" /><span class="field-suffix">yrs</span></div>
+            </div>
+            <div class="field">
+              <label class="field-label">Retirement Age</label>
+              <div class="field-wrap"><input type="text" data-key="retirementAge" /><span class="field-suffix">yrs</span></div>
+            </div>
+            <div class="field">
+              <label class="field-label">Plan Through Age</label>
+              <div class="field-wrap"><input type="text" data-key="endAge" /><span class="field-suffix">yrs</span></div>
+            </div>
           </div>
-          {helpText && <span style={{ fontSize: '11px', color: '#6b7280', marginTop: '3px', display: 'block', fontFamily: "'DM Sans', sans-serif" }}>{helpText}</span>}
-        </div>
-      );
-    };
 
-    const StatCard = ({ label, value, color, sublabel }) => (
-      <div style={{ background: '#ffffff', border: "2px solid " + color, borderRadius: '8px', padding: '16px 18px', flex: 1, minWidth: '140px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-        <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6b7280', marginBottom: '6px', fontFamily: "'DM Sans', sans-serif", fontWeight: 600 }}>{label}</div>
-        <div style={{ fontSize: '22px', fontWeight: '700', color: color, fontFamily: "'DM Sans', sans-serif" }}>{value}</div>
-        {sublabel && <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '4px', fontFamily: "'DM Sans', sans-serif" }}>{sublabel}</div>}
+          <div class="input-section">
+            <div class="section-label" style="color:#d4af37;">Accumulation</div>
+            <div class="field">
+              <label class="field-label">Current Portfolio</label>
+              <div class="field-wrap"><span class="field-prefix">$</span><input type="text" data-key="startingPortfolio" /></div>
+            </div>
+            <div class="field">
+              <label class="field-label">Annual Contribution</label>
+              <div class="field-wrap"><span class="field-prefix">$</span><input type="text" data-key="annualContribution" /></div>
+              <span class="field-help">Until retirement</span>
+            </div>
+            <div class="field">
+              <label class="field-label">Avg Growth Rate</label>
+              <div class="field-wrap"><input type="text" data-key="growthRate" /><span class="field-suffix">%</span></div>
+            </div>
+          </div>
+
+          <div class="input-section">
+            <div class="section-label" style="color:#dc2626;">Withdrawals</div>
+            <div class="field">
+              <label class="field-label">Phase 1 Annual Withdrawal</label>
+              <div class="field-wrap"><span class="field-prefix">$</span><input type="text" data-key="phase1Withdrawal" /></div>
+              <span class="field-help" id="phase1Help"></span>
+            </div>
+            <div class="field">
+              <label class="field-label">Phase 2 Starts At Age</label>
+              <div class="field-wrap"><input type="text" data-key="phase2Age" /><span class="field-suffix">yrs</span></div>
+            </div>
+            <div class="field">
+              <label class="field-label">Phase 2 Annual Withdrawal</label>
+              <div class="field-wrap"><span class="field-prefix">$</span><input type="text" data-key="phase2Withdrawal" /></div>
+              <span class="field-help" id="phase2Help"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chart Panel -->
+        <div class="chart-panel">
+          <div class="chart-header">
+            <span class="chart-title">Portfolio Value vs. Cumulative Withdrawals</span>
+            <div class="chart-legend">
+              <span class="legend-item"><span class="legend-swatch" style="background:#0a2463;"></span><span class="legend-text">Portfolio</span></span>
+              <span class="legend-item"><span class="legend-swatch" style="background:#dc2626;"></span><span class="legend-text">Cumulative Withdrawals</span></span>
+            </div>
+          </div>
+
+          <div class="chart-container">
+            <canvas id="chart" height="420"></canvas>
+            <div class="chart-tooltip" id="tooltip">
+              <div class="tooltip-age" id="tooltipAge"></div>
+              <div class="tooltip-row" id="tooltipPortfolio" style="color:#0a2463;"></div>
+              <div class="tooltip-row" id="tooltipWithdrawals" style="color:#dc2626;"></div>
+            </div>
+          </div>
+
+          <div class="chart-note" id="chartNote"></div>
+        </div>
       </div>
-    );
 
-    const CustomTooltip = ({ active, payload }) => {
-      if (active && payload && payload.length) {
-        return (
-          <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: '6px', padding: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
-            <div style={{ fontSize: '12px', color: '#1a1a1a', marginBottom: '6px', fontWeight: 600 }}>Age {payload[0].payload.age}</div>
-            {payload.map((item, i) => (
-              <div key={i} style={{ fontSize: '11px', color: item.color, marginBottom: '4px' }}>
-                {item.name}: {formatCurrency(item.value)}
-              </div>
-            ))}
-          </div>
-        );
-      }
-      return null;
+      <div class="planner-footer">
+        This model assumes a constant average annual growth rate and does not account for inflation, taxes, market volatility, or sequence-of-returns risk.
+        For illustration purposes only — not financial advice. Consult your advisor for personalized planning.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ── State ──
+    const state = {
+      currentAge: 55,
+      retirementAge: 65,
+      endAge: 95,
+      startingPortfolio: 500000,
+      annualContribution: 25000,
+      growthRate: 7.0,
+      phase1Withdrawal: 50000,
+      phase2Age: 75,
+      phase2Withdrawal: 70000,
     };
 
-    function RetirementPlanner() {
-      const [currentAge, setCurrentAge] = useState(55);
-      const [retirementAge, setRetirementAge] = useState(65);
-      const [startingPortfolio, setStartingPortfolio] = useState(500000);
-      const [annualContribution, setAnnualContribution] = useState(25000);
-      const [growthRate, setGrowthRate] = useState(7.0);
-      const [phase1Withdrawal, setPhase1Withdrawal] = useState(50000);
-      const [phase2Age, setPhase2Age] = useState(75);
-      const [phase2Withdrawal, setPhase2Withdrawal] = useState(70000);
-      const [endAge, setEndAge] = useState(95);
+    // ── Helpers ──
+    const fmtC = v => {
+      if (v >= 1e6) return '$' + (v / 1e6).toFixed(2) + 'M';
+      if (v >= 1e3) return '$' + (v / 1e3).toFixed(0) + 'K';
+      return '$' + v.toFixed(0);
+    };
+    const fmtFull = v => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(v);
+    const fmtCommas = n => n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    const isFloat = key => key === 'growthRate';
 
-      const data = useMemo(() => {
-        const points = [];
-        let portfolio = startingPortfolio;
-        let totalWithdrawn = 0;
-        const rate = growthRate / 100;
-        for (let age = currentAge; age <= endAge; age++) {
-          if (age < retirementAge) {
-            portfolio = portfolio * (1 + rate) + annualContribution;
-            points.push({ age, portfolioValue: Math.round(portfolio), cumulativeWithdrawals: 0, phase: 'accumulation' });
-          } else {
-            const withdrawal = age >= phase2Age ? phase2Withdrawal : phase1Withdrawal;
-            portfolio = portfolio * (1 + rate) - withdrawal;
-            totalWithdrawn += withdrawal;
-            points.push({ age, portfolioValue: Math.max(0, Math.round(portfolio)), cumulativeWithdrawals: Math.round(totalWithdrawn), annualWithdrawal: withdrawal, phase: age >= phase2Age ? 'phase2' : 'phase1' });
-          }
+    // ── Compute Data ──
+    function computeData() {
+      const { currentAge, retirementAge, endAge, startingPortfolio, annualContribution, growthRate, phase1Withdrawal, phase2Age, phase2Withdrawal } = state;
+      const pts = [];
+      let port = startingPortfolio;
+      let totalW = 0;
+      const rate = growthRate / 100;
+      for (let age = currentAge; age <= endAge; age++) {
+        if (age < retirementAge) {
+          port = port * (1 + rate) + annualContribution;
+          pts.push({ age, portfolioValue: Math.round(port), cumulativeWithdrawals: 0, phase: 'accumulation' });
+        } else {
+          const w = age >= phase2Age ? phase2Withdrawal : phase1Withdrawal;
+          port = port * (1 + rate) - w;
+          totalW += w;
+          pts.push({ age, portfolioValue: Math.max(0, Math.round(port)), cumulativeWithdrawals: Math.round(totalW), annualWithdrawal: w, phase: age >= phase2Age ? 'phase2' : 'phase1' });
         }
-        return points;
-      }, [currentAge, retirementAge, startingPortfolio, annualContribution, growthRate, phase1Withdrawal, phase2Age, phase2Withdrawal, endAge]);
-
-      const crossoverAge = useMemo(() => {
-        const cross = data.find(d => d.cumulativeWithdrawals > 0 && d.cumulativeWithdrawals >= d.portfolioValue);
-        return cross ? cross.age : null;
-      }, [data]);
-
-      const depletionAge = useMemo(() => {
-        const dep = data.find(d => d.portfolioValue <= 0 && d.age >= retirementAge);
-        return dep ? dep.age : null;
-      }, [data, retirementAge]);
-
-      const peakPortfolio = useMemo(() => Math.max(...data.map(d => d.portfolioValue)), [data]);
-      const portfolioAtRetirement = useMemo(() => { const ret = data.find(d => d.age === retirementAge); return ret ? ret.portfolioValue : 0; }, [data, retirementAge]);
-      const portfolioAtEnd = useMemo(() => { const end = data.find(d => d.age === endAge); return end ? end.portfolioValue : 0; }, [data, endAge]);
-      const totalWithdrawnAtEnd = useMemo(() => { const end = data.find(d => d.age === endAge); return end ? end.cumulativeWithdrawals : 0; }, [data, endAge]);
-
-      const isDanger = useMemo(() => {
-        return depletionAge !== null || (crossoverAge && crossoverAge <= endAge);
-      }, [depletionAge, crossoverAge, endAge]);
-
-      return (
-        <div style={{ minHeight: '100vh', background: '#f8f9fa', padding: '32px 20px' }}>
-          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-            {/* Header */}
-            <div style={{ marginBottom: '32px' }}>
-              <h1 style={{ fontSize: '32px', fontWeight: '700', color: '#0a2463', marginBottom: '8px', fontFamily: "'Playfair Display', serif" }}>Retirement Planner</h1>
-              <p style={{ fontSize: '14px', color: '#6b7280' }}>Wealth & Estate Financial Canada</p>
-            </div>
-
-            {/* Stats Row */}
-            <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap' }}>
-              <StatCard label="At Retirement" value={formatCurrency(portfolioAtRetirement)} color="#0a2463" sublabel={"Age " + retirementAge} />
-              <StatCard label="Peak Value" value={formatCurrency(peakPortfolio)} color="#d4af37" />
-              <StatCard label="Total Withdrawn" value={formatCurrency(totalWithdrawnAtEnd)} color="#dc2626" sublabel={"By age " + endAge} />
-              <StatCard label={"At Age " + endAge} value={formatCurrency(portfolioAtEnd)} color={portfolioAtEnd > 0 ? '#0a7e3e' : '#dc2626'} sublabel={portfolioAtEnd > 0 ? 'Remaining' : 'Depleted'} />
-            </div>
-
-            {/* Main Layout */}
-            <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
-              {/* Inputs Panel */}
-              <div style={{ width: '280px', flexShrink: 0, background: '#ffffff', border: '2px solid #e5e7eb', borderRadius: '8px', padding: '24px', boxShadow: '0 2px 4px rgba(0,0,0,0.08)' }}>
-                <h3 style={{ fontSize: '13px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#0a2463', marginTop: 0, marginBottom: '20px' }}>
-                  📊 Your Inputs
-                </h3>
-                <div style={{ borderBottom: '2px solid #f3f4f6', paddingBottom: '18px', marginBottom: '18px' }}>
-                  <div style={{ fontSize: '11px', fontWeight: '700', color: '#0a2463', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Ages</div>
-                  <InputField label="Current Age" value={currentAge} onChange={setCurrentAge} suffix="yrs" />
-                  <InputField label="Retirement Age" value={retirementAge} onChange={setRetirementAge} suffix="yrs" />
-                  <InputField label="Plan Through Age" value={endAge} onChange={setEndAge} suffix="yrs" />
-                </div>
-                <div style={{ borderBottom: '2px solid #f3f4f6', paddingBottom: '18px', marginBottom: '18px' }}>
-                  <div style={{ fontSize: '11px', fontWeight: '700', color: '#d4af37', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Accumulation</div>
-                  <InputField label="Current Portfolio" value={startingPortfolio} onChange={setStartingPortfolio} prefix="$" />
-                  <InputField label="Annual Contribution" value={annualContribution} onChange={setAnnualContribution} prefix="$" helpText="Until retirement" />
-                  <InputField label="Avg Growth Rate" value={growthRate} onChange={setGrowthRate} suffix="%" />
-                </div>
-                <div>
-                  <div style={{ fontSize: '11px', fontWeight: '700', color: '#dc2626', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Withdrawals</div>
-                  <InputField label="Phase 1 Annual Withdrawal" value={phase1Withdrawal} onChange={setPhase1Withdrawal} prefix="$" helpText={"Age " + retirementAge + " to " + (phase2Age - 1)} />
-                  <InputField label="Phase 2 Starts At Age" value={phase2Age} onChange={setPhase2Age} suffix="yrs" />
-                  <InputField label="Phase 2 Annual Withdrawal" value={phase2Withdrawal} onChange={setPhase2Withdrawal} prefix="$" helpText={"Age " + phase2Age + " to " + endAge} />
-                </div>
-              </div>
-
-              {/* Chart Panel */}
-              <div style={{ flex: 1, minWidth: '400px', background: '#ffffff', border: '2px solid #e5e7eb', borderRadius: '8px', padding: '28px', boxShadow: '0 2px 4px rgba(0,0,0,0.08)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                  <h3 style={{ fontSize: '15px', fontWeight: '700', color: '#0a2463', margin: 0 }}>Portfolio Value vs. Cumulative Withdrawals</h3>
-                  <div style={{ display: 'flex', gap: '16px', fontSize: '11px' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                      <span style={{ width: '12px', height: '3px', background: '#0a2463', borderRadius: '2px', display: 'inline-block' }} />
-                      <span style={{ color: '#6b7280' }}>Portfolio</span>
-                    </span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                      <span style={{ width: '12px', height: '3px', background: '#dc2626', borderRadius: '2px', display: 'inline-block' }} />
-                      <span style={{ color: '#6b7280' }}>Cumulative Withdrawals</span>
-                    </span>
-                  </div>
-                </div>
-
-                <ResponsiveContainer width="100%" height={420}>
-                  <ComposedChart data={data} margin={{ top: 30, right: 20, left: 10, bottom: 10 }}>
-                    <defs>
-                      <linearGradient id="portfolioGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#0a2463" stopOpacity={0.15} />
-                        <stop offset="100%" stopColor="#0a2463" stopOpacity={0.02} />
-                      </linearGradient>
-                      <linearGradient id="withdrawGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#dc2626" stopOpacity={0.15} />
-                        <stop offset="100%" stopColor="#dc2626" stopOpacity={0.02} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                    <XAxis dataKey="age" stroke="#9ca3af" tick={{ fill: '#6b7280', fontSize: 11 }} label={{ value: 'Age', position: 'insideBottom', offset: -5, fill: '#6b7280', fontSize: 11 }} />
-                    <YAxis stroke="#9ca3af" tick={{ fill: '#6b7280', fontSize: 11 }} tickFormatter={formatCurrency} width={70} />
-                    <Tooltip content={<CustomTooltip />} />
-                    <ReferenceLine x={retirementAge} stroke="#d4af37" strokeDasharray="6 4" strokeOpacity={0.8} label={{ value: "Retire " + retirementAge, position: 'top', fill: '#d4af37', fontSize: 10, fontWeight: 600 }} />
-                    <ReferenceLine x={phase2Age} stroke="#d97706" strokeDasharray="6 4" strokeOpacity={0.6} label={{ value: "Phase 2: " + phase2Age, position: 'top', fill: '#d97706', fontSize: 10 }} />
-                    {crossoverAge && (
-                      <ReferenceLine x={crossoverAge} stroke="#dc2626" strokeDasharray="4 3" strokeOpacity={0.7} label={{ value: "Cross " + crossoverAge, position: 'insideTopRight', fill: '#dc2626', fontSize: 10 }} />
-                    )}
-                    <Area type="monotone" dataKey="portfolioValue" fill="url(#portfolioGrad)" stroke="none" />
-                    <Line type="monotone" dataKey="portfolioValue" stroke="#0a2463" strokeWidth={3} dot={false} name="Portfolio Value" activeDot={{ r: 5, fill: '#0a2463', stroke: '#fff', strokeWidth: 2 }} />
-                    <Area type="monotone" dataKey="cumulativeWithdrawals" fill="url(#withdrawGrad)" stroke="none" />
-                    <Line type="monotone" dataKey="cumulativeWithdrawals" stroke="#dc2626" strokeWidth={3} dot={false} name="Cumulative Withdrawals" activeDot={{ r: 5, fill: '#dc2626', stroke: '#fff', strokeWidth: 2 }} />
-                  </ComposedChart>
-                </ResponsiveContainer>
-
-                <div style={{ marginTop: '18px', padding: '16px 20px', background: '#f9fafb', borderRadius: '6px', border: '1px solid #e5e7eb', fontSize: '12px', color: '#4b5563', lineHeight: '1.7' }}>
-                  <strong style={{ color: '#1f2937' }}>How to read this chart:</strong> The navy line (portfolio value) should always stay <em>above</em> the red line (cumulative withdrawals).
-                  When the red line crosses above the navy line, you're withdrawing faster than the portfolio grows — <span style={{ color: '#dc2626', fontWeight: '600' }}>eventual depletion is likely</span>.
-                  Adjust withdrawal amounts until the portfolio remains sustainable through age {endAge}.
-                  {isDanger && (
-                    <div style={{ marginTop: '10px', color: '#dc2626', fontWeight: '600' }}>
-                      💡 Try reducing Phase {phase2Withdrawal > phase1Withdrawal ? '2' : '1'} withdrawals by {formatCurrency(Math.round((phase2Withdrawal > phase1Withdrawal ? phase2Withdrawal : phase1Withdrawal) * 0.15))} to see if sustainability improves.
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div style={{ marginTop: '24px', padding: '16px 24px', borderTop: '2px solid #e5e7eb', fontSize: '11px', color: '#6b7280', textAlign: 'center', background: '#ffffff', borderRadius: '6px' }}>
-              This model assumes a constant average annual growth rate and does not account for inflation, taxes, market volatility, or sequence-of-returns risk.
-              For illustration purposes only — not financial advice. Consult your advisor for personalized planning.
-            </div>
-          </div>
-        </div>
-      );
+      }
+      return pts;
     }
 
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<RetirementPlanner />);
+    function computeStats(data) {
+      const { retirementAge, endAge, phase2Age, phase1Withdrawal, phase2Withdrawal } = state;
+      const atRetire = data.find(d => d.age === retirementAge);
+      const atEnd = data.find(d => d.age === endAge);
+      const peak = Math.max(...data.map(d => d.portfolioValue));
+      const cross = data.find(d => d.cumulativeWithdrawals > 0 && d.cumulativeWithdrawals >= d.portfolioValue);
+      const depletion = data.find(d => d.portfolioValue <= 0 && d.age >= retirementAge);
+      return {
+        portfolioAtRetirement: atRetire ? atRetire.portfolioValue : 0,
+        peakPortfolio: peak,
+        totalWithdrawnAtEnd: atEnd ? atEnd.cumulativeWithdrawals : 0,
+        portfolioAtEnd: atEnd ? atEnd.portfolioValue : 0,
+        crossoverAge: cross ? cross.age : null,
+        depletionAge: depletion ? depletion.age : null,
+        isDanger: depletion !== null || (cross && cross.age <= endAge),
+      };
+    }
+
+    // ── Render Stats ──
+    function renderStats(stats) {
+      const { retirementAge, endAge } = state;
+      const row = document.getElementById('statsRow');
+      const cards = [
+        { label: 'At Retirement', value: fmtC(stats.portfolioAtRetirement), color: '#0a2463', sub: 'Age ' + retirementAge },
+        { label: 'Peak Value', value: fmtC(stats.peakPortfolio), color: '#d4af37', sub: '' },
+        { label: 'Total Withdrawn', value: fmtC(stats.totalWithdrawnAtEnd), color: '#dc2626', sub: 'By age ' + endAge },
+        { label: 'At Age ' + endAge, value: fmtC(stats.portfolioAtEnd), color: stats.portfolioAtEnd > 0 ? '#0a7e3e' : '#dc2626', sub: stats.portfolioAtEnd > 0 ? 'Remaining' : 'Depleted' },
+      ];
+      row.innerHTML = cards.map(c => `
+        <div class="stat-card" style="border-color:${c.color};">
+          <div class="stat-label">${c.label}</div>
+          <div class="stat-value" style="color:${c.color};">${c.value}</div>
+          ${c.sub ? `<div class="stat-sub">${c.sub}</div>` : ''}
+        </div>
+      `).join('');
+    }
+
+    // ── Render Note ──
+    function renderNote(stats) {
+      const { endAge, phase1Withdrawal, phase2Withdrawal } = state;
+      const note = document.getElementById('chartNote');
+      let html = `<strong>How to read this chart:</strong> The navy line (portfolio value) should always stay <em>above</em> the red line (cumulative withdrawals). When the red line crosses above the navy line, you're withdrawing faster than the portfolio grows — <span style="color:#dc2626;font-weight:600;">eventual depletion is likely</span>. Adjust withdrawal amounts until the portfolio remains sustainable through age ${endAge}.`;
+      if (stats.isDanger) {
+        const bigger = phase2Withdrawal > phase1Withdrawal ? phase2Withdrawal : phase1Withdrawal;
+        const phase = phase2Withdrawal > phase1Withdrawal ? '2' : '1';
+        html += `<div class="danger-tip">💡 Try reducing Phase ${phase} withdrawals by ${fmtC(Math.round(bigger * 0.15))} to see if sustainability improves.</div>`;
+      }
+      note.innerHTML = html;
+    }
+
+    // ── Canvas Chart ──
+    const canvas = document.getElementById('chart');
+    const ctx = canvas.getContext('2d');
+    const tooltipEl = document.getElementById('tooltip');
+    let chartData = [];
+    let chartStats = {};
+
+    function drawChart() {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.parentElement.getBoundingClientRect();
+      const W = rect.width;
+      const H = 420;
+      canvas.width = W * dpr;
+      canvas.height = H * dpr;
+      canvas.style.width = W + 'px';
+      canvas.style.height = H + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      const pad = { top: 36, right: 24, bottom: 42, left: 72 };
+      const cw = W - pad.left - pad.right;
+      const ch = H - pad.top - pad.bottom;
+
+      const data = chartData;
+      if (!data.length) return;
+
+      const ages = data.map(d => d.age);
+      const allVals = data.flatMap(d => [d.portfolioValue, d.cumulativeWithdrawals]);
+      const minAge = Math.min(...ages);
+      const maxAge = Math.max(...ages);
+      const maxVal = Math.max(...allVals) * 1.08;
+
+      const xScale = age => pad.left + ((age - minAge) / (maxAge - minAge)) * cw;
+      const yScale = val => pad.top + ch - (val / maxVal) * ch;
+
+      // Background
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, W, H);
+
+      // Grid
+      ctx.strokeStyle = '#e5e7eb';
+      ctx.setLineDash([3, 3]);
+      ctx.lineWidth = 1;
+      const yTicks = 6;
+      for (let i = 0; i <= yTicks; i++) {
+        const val = (maxVal / yTicks) * i;
+        const y = yScale(val);
+        ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
+        ctx.fillStyle = '#6b7280'; ctx.font = '11px DM Sans'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+        ctx.fillText(fmtC(val), pad.left - 8, y);
+      }
+      const ageStep = Math.max(1, Math.ceil((maxAge - minAge) / 12));
+      for (let a = minAge; a <= maxAge; a += ageStep) {
+        const x = xScale(a);
+        ctx.beginPath(); ctx.moveTo(x, pad.top); ctx.lineTo(x, pad.top + ch); ctx.stroke();
+        ctx.fillStyle = '#6b7280'; ctx.font = '11px DM Sans'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+        ctx.fillText(a, x, pad.top + ch + 8);
+      }
+      ctx.setLineDash([]);
+
+      // Axis label
+      ctx.fillStyle = '#6b7280'; ctx.font = '11px DM Sans'; ctx.textAlign = 'center';
+      ctx.fillText('Age', pad.left + cw / 2, H - 4);
+
+      // Reference lines
+      const drawRef = (age, color, label, dashArr) => {
+        if (age < minAge || age > maxAge) return;
+        const x = xScale(age);
+        ctx.strokeStyle = color; ctx.setLineDash(dashArr); ctx.lineWidth = 1.5; ctx.globalAlpha = 0.8;
+        ctx.beginPath(); ctx.moveTo(x, pad.top); ctx.lineTo(x, pad.top + ch); ctx.stroke();
+        ctx.globalAlpha = 1; ctx.setLineDash([]);
+        ctx.fillStyle = color; ctx.font = '600 10px DM Sans'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+        ctx.fillText(label, x, pad.top - 4);
+      };
+      drawRef(state.retirementAge, '#d4af37', 'Retire ' + state.retirementAge, [6, 4]);
+      drawRef(state.phase2Age, '#d97706', 'Phase 2: ' + state.phase2Age, [6, 4]);
+      if (chartStats.crossoverAge) drawRef(chartStats.crossoverAge, '#dc2626', 'Cross ' + chartStats.crossoverAge, [4, 3]);
+
+      // Area fills
+      const drawArea = (key, gradTopColor) => {
+        ctx.beginPath();
+        ctx.moveTo(xScale(data[0].age), yScale(0));
+        data.forEach(d => ctx.lineTo(xScale(d.age), yScale(d[key])));
+        ctx.lineTo(xScale(data[data.length - 1].age), yScale(0));
+        ctx.closePath();
+        const grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + ch);
+        grad.addColorStop(0, gradTopColor.replace(')', ',0.15)').replace('rgb', 'rgba'));
+        grad.addColorStop(1, gradTopColor.replace(')', ',0.02)').replace('rgb', 'rgba'));
+        // Use hex-to-rgba manually
+        ctx.fillStyle = gradTopColor;
+        ctx.globalAlpha = 0.1;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      };
+      drawArea('portfolioValue', '#0a2463');
+      drawArea('cumulativeWithdrawals', '#dc2626');
+
+      // Lines
+      const drawLine = (key, color) => {
+        ctx.strokeStyle = color; ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+        ctx.beginPath();
+        data.forEach((d, i) => { const x = xScale(d.age), y = yScale(d[key]); i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); });
+        ctx.stroke();
+      };
+      drawLine('portfolioValue', '#0a2463');
+      drawLine('cumulativeWithdrawals', '#dc2626');
+
+      // Store scales for tooltip
+      canvas._scales = { xScale, yScale, minAge, maxAge, pad, cw, ch };
+    }
+
+    // ── Tooltip ──
+    canvas.addEventListener('mousemove', e => {
+      if (!chartData.length || !canvas._scales) return;
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const { xScale, minAge, maxAge, pad } = canvas._scales;
+      if (mx < pad.left || mx > rect.width - pad.right) { tooltipEl.classList.remove('visible'); return; }
+      const hoveredAge = Math.round(minAge + ((mx - pad.left) / (rect.width - pad.left - pad.right)) * (maxAge - minAge));
+      const dp = chartData.find(d => d.age === hoveredAge);
+      if (!dp) { tooltipEl.classList.remove('visible'); return; }
+      document.getElementById('tooltipAge').textContent = 'Age ' + dp.age;
+      document.getElementById('tooltipPortfolio').textContent = 'Portfolio Value: ' + fmtFull(dp.portfolioValue);
+      document.getElementById('tooltipWithdrawals').textContent = 'Cumulative Withdrawals: ' + fmtFull(dp.cumulativeWithdrawals);
+      tooltipEl.classList.add('visible');
+      let tx = mx + 16;
+      if (tx + 200 > rect.width) tx = mx - 210;
+      tooltipEl.style.left = tx + 'px';
+      tooltipEl.style.top = (e.clientY - rect.top - 40) + 'px';
+    });
+    canvas.addEventListener('mouseleave', () => tooltipEl.classList.remove('visible'));
+
+    // ── Input Binding ──
+    function bindInputs() {
+      document.querySelectorAll('[data-key]').forEach(input => {
+        const key = input.dataset.key;
+        input.value = isFloat(key) ? state[key] : fmtCommas(state[key]);
+        input.addEventListener('input', e => {
+          const raw = e.target.value.replace(/,/g, '');
+          const num = Number(raw);
+          if (!isNaN(num)) {
+            state[key] = num;
+            if (!isFloat(key)) e.target.value = fmtCommas(num);
+            update();
+          }
+        });
+      });
+    }
+
+    function updateHelpTexts() {
+      document.getElementById('phase1Help').textContent = 'Age ' + state.retirementAge + ' to ' + (state.phase2Age - 1);
+      document.getElementById('phase2Help').textContent = 'Age ' + state.phase2Age + ' to ' + state.endAge;
+    }
+
+    // ── Master Update ──
+    function update() {
+      chartData = computeData();
+      chartStats = computeStats(chartData);
+      renderStats(chartStats);
+      renderNote(chartStats);
+      updateHelpTexts();
+      drawChart();
+    }
+
+    // ── Init ──
+    bindInputs();
+    update();
+    window.addEventListener('resize', drawChart);
   </script>
 </body>
 </html>
